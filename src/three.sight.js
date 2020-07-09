@@ -4,21 +4,26 @@ const sightInterface = {
     viewSegments: 32,
     rotateSpeed: 0.5
 };
+import * as THREE from 'three';
 
-export class Sight extends THREE.Object3D {
-    constructor() {
+
+// TODO: dynamic position, angle position, local draw, global draw
+export default class Sight extends THREE.Object3D {
+    constructor(sightProps = sightInterface) {
         super();
+        
+        this.sightProps = sightProps; 
 
         this.rotationAngle = 0;
 
         const geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3);
 
-        const angleSize = sightInterface.viewAngle / sightInterface.viewSegments;
-        const radius = sightInterface.viewRadius;
+        const angleSize = this.sightProps.viewAngle / this.sightProps.viewSegments;
+        const radius = this.sightProps.viewRadius;
 
-        for (let i = 0; i < sightInterface.viewSegments; i++) {
-            const angle = -sightInterface.viewAngle / 2 + angleSize * i;
+        for (let i = 0; i < this.sightProps.viewSegments; i++) {
+            const angle = -this.sightProps.viewAngle / 2 + angleSize * i;
             const {x, y, z} = this.dirFromAngle(angle, false);
             geometry.vertices.push(new THREE.Vector3(radius * x, y, radius * z));
             if (i > 0) {
@@ -57,8 +62,8 @@ export class Sight extends THREE.Object3D {
 
     getIntersection(obj) {
 
-        const angleSize = sightInterface.viewAngle / sightInterface.viewSegments;
-        const radius = sightInterface.viewRadius;
+        const angleSize = this.sightProps.viewAngle / this.sightProps.viewSegments;
+        const radius = this.sightProps.viewRadius;
 
         const box = obj.geometry.boundingBox.clone();
         box.applyMatrix4(obj.matrixWorld);
@@ -67,8 +72,8 @@ export class Sight extends THREE.Object3D {
 
         const baseXYZ = new THREE.Vector3;
 
-        for (let i = 1; i < sightInterface.viewSegments + 1; i++) {
-            const angle = -sightInterface.viewAngle / 2 + angleSize * i;
+        for (let i = 1; i < this.sightProps.viewSegments + 1; i++) {
+            const angle = -this.sightProps.viewAngle / 2 + angleSize * i;
             const {x, z} = this.dirFromAngle(angle, false);
             this.ray.set(baseXYZ, new THREE.Vector3(radius * x, 0, radius * z));
             const intersectBox = this.ray.intersectBox(box, new THREE.Vector3);
