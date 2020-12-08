@@ -1,7 +1,7 @@
 {
   "name": "three.sight",
   "version": "1.0.0",
-  "description": "",
+  "description": "three sight",
   "main": "index.js",
   "scripts": {
     "start": "parcel index.html",
@@ -9,17 +9,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/geekofcola/three.sight.js.git"
+    "url": "git+https://github.com/geekofcola/three-js-sight.git"
   },
   "author": "andrii.ostapenko",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/geekofcola/three.sight.js/issues"
+    "url": "https://github.com/geekofcola/three-js-sight/issues"
   },
-  "homepage": "https://github.com/geekofcola/three.sight.js#readme",
+  "homepage": "https://github.com/geekofcola/three-js-sight#readme",
   "dependencies": {
     "dat.gui": "^0.7.7",
     "parcel-bundler": "^1.12.4",
-    "three": "^0.118.3"
+    "three": "^0.123.0"
   }
 }
