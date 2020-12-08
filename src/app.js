@@ -49,6 +49,9 @@ export class App {
         scene.add(this.sight);
 
         this.addGUI();
+        this.sight.rotation.y = .5;
+        this.sight.getIntersection(this.layout.intersectionObj);
+        
     }
 
     addGUI() {
@@ -58,9 +61,7 @@ export class App {
         [
             sightF.add(this.state, 'viewRadius', 1, 10),
             sightF.add(this.state, 'viewAngle', 0, 360),
-            sightF.add(this.state, 'viewSegments'),
-            sightF.add(this.state, 'rotate'),
-        ].forEach((prop) => prop.onChange(() => this.updateSigthProps()));
+        ]//.forEach((prop) => prop.onChange(() => this.updateSigthProps()));
 
         const guiWrap = document.createElement('div');
         document.body.appendChild( guiWrap );
@@ -80,5 +81,12 @@ export class App {
         this.layout.update();
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
+
+
+        this.sight.rotation.y += .02;
+        this.sight.position.x -= Math.sin(this.sight.rotation.y) / 50;
+        this.sight.position.z -= Math.sin(this.sight.rotation.y) / 50;
+
+        this.sight.getIntersection(this.layout.intersectionObj);
     }
 }

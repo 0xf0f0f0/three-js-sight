@@ -24,9 +24,10 @@ export default class Layout {
         const {scene} = this;
 
         const geometry = new THREE.BoxBufferGeometry( 2, 2, 2 );
-        const material = new THREE.MeshBasicMaterial( {color: 0x0000ff} );
+        const material = new THREE.MeshBasicMaterial( {color: 0x0000ff, transparent: true, opacity: .2} );
         const cube = new THREE.Mesh( geometry, material );
-        cube.position.set(2, 1, 4);
+        cube.position.set(1, 1, 4);
+        cube.geometry.computeBoundingBox();
         scene.add( cube );
 
         const cube1 = new THREE.Mesh( geometry, material );
@@ -37,8 +38,13 @@ export default class Layout {
         cube2.position.set(-4, 1, -4);
         scene.add( cube2 );
 
-
+        cube.updateMatrix();
         this.intersectionObj.push(cube, cube1, cube2);
+
+        this.intersectionObj.forEach((b) => {
+            b.updateMatrix();
+            b.updateWorldMatrix()
+        })
     }
 
     update() {

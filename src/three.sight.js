@@ -1,13 +1,11 @@
 const sightInterface = {
-    viewRadius: 5,
-    viewAngle: 44,
+    viewRadius: 7,
+    viewAngle: 84,
     viewSegments: 32,
     rotateSpeed: 0.5
 };
 import * as THREE from 'three';
 
-
-// TODO: dynamic position, angle position, local draw, global draw
 export default class Sight extends THREE.Object3D {
     constructor(sightProps = sightInterface) {
         super();
@@ -45,46 +43,55 @@ export default class Sight extends THREE.Object3D {
         this.add(mesh);
 
         this.ray = new THREE.Ray(new THREE.Vector3, new THREE.Vector3);
+
+        this.originVec3 = new THREE.Vector3;
+        this.dirVec3 = new THREE.Vector3(0, 1, 0);
+
+        this.raycaster = new THREE.Raycaster(this.originVec3, this.dirVec3, 0, 100);
     }
 
 
     dirFromAngle(angleInDegrees, angleIsGlobal) {
+        let angleInRad = THREE.MathUtils.degToRad(angleInDegrees);
         if (!angleIsGlobal) {
-            angleInDegrees += this.rotationAngle;
+            angleInRad += this.rotation.y;
         }
 
         return new THREE.Vector3(
-            Math.sin(angleInDegrees * (Math.PI / 180)),
+            Math.sin(angleInRad),
             0,
-            Math.cos(angleInDegrees * (Math.PI / 180))
+            Math.cos(angleInRad)
         );
     }
 
-    getIntersection(obj) {
-
+    getIntersection(objs) {
         const angleSize = this.sightProps.viewAngle / this.sightProps.viewSegments;
         const radius = this.sightProps.viewRadius;
 
-        const box = obj.geometry.boundingBox.clone();
-        box.applyMatrix4(obj.matrixWorld);
-
         this.updateWorldMatrix();
-
-        const baseXYZ = new THREE.Vector3;
+        this.getWorldPosition(this.originVec3);
 
         for (let i = 1; i < this.sightProps.viewSegments + 1; i++) {
             const angle = -this.sightProps.viewAngle / 2 + angleSize * i;
+            
             const {x, z} = this.dirFromAngle(angle, false);
-            this.ray.set(baseXYZ, new THREE.Vector3(radius * x, 0, radius * z));
-            const intersectBox = this.ray.intersectBox(box, new THREE.Vector3);
 
-            if (intersectBox) {
-                this.mesh.geometry.vertices[i].x = intersectBox.x;
-                this.mesh.geometry.vertices[i].z = intersectBox.z;
-                
+            this.dirVec3.set(radius * x, 0, radius * z).normalize();
+            this.raycaster.set(this.originVec3, this.dirVec3);
+            
+
+            const inter = this.raycaster.intersectObjects(objs);
+
+            if (inter.length > 0) {
+                const {distance} = inter[0];
+                const d = distance > radius ? radius : distance;
+                const v = this.dirFromAngle(angle, true);
+                this.mesh.geometry.vertices[i].x = d * v.x;
+                this.mesh.geometry.vertices[i].z = d * v.z;
             } else {
-                this.mesh.geometry.vertices[i].x = radius * x;
-                this.mesh.geometry.vertices[i].z = radius * z;
+                const v = this.dirFromAngle(angle, true);
+                this.mesh.geometry.vertices[i].x = radius * v.x;
+                this.mesh.geometry.vertices[i].z = radius * v.z;
             }
 
             this.mesh.geometry.computeVertexNormals();
