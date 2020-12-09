@@ -1,43 +1,41 @@
 import * as THREE from 'three';
 
-export default class SightThree extends THREE.Object3D {
+export default class BufferSightThree {
     static defaultProps = {
         viewRadius: 5,
         viewAngle: 50,
         viewSegments: 32
     };
 
-    constructor(props, mat) {
-        super();
-
+    constructor(scene, props, mat) {
+        this.scene = scene;
         this.props = {
-            ...SightThree.defaultProps,
+            ...BufferSightThree.defaultProps,
             ...props
         };
 
         const {viewAngle, viewSegments, viewRadius: radius} = this.props;
         const angleSize = viewAngle / viewSegments;
 
-        const geometry = this.geometry = new THREE.Geometry;
-        geometry.vertices.push(new THREE.Vector3);
+        const geometry = this.geometry = new THREE.BufferGeometry;
+        const vertices = new Float32Array( (viewSegments + 1) * 3 );
+        const indices = [];
+
+        vertices.set([0, 0, 0], 0);
 
         for (let i = 0; i < viewSegments; i++) {
             const angle = -viewAngle / 2 + angleSize * i;
-            const {x, z} = this.dirFromAngle(angle, false);
+            const {x, y, z} = this.dirFromAngle(angle, false);
 
-            geometry.vertices.push(new THREE.Vector3(
-                radius * x, 0, radius * z
-            ));
+            vertices.set([radius * x, y, radius * z], (i + 1) * 3);
 
             if (i > 0) {
-                geometry.faces.push(new THREE.Face3(0, i, i + 1));
+                indices.push(0, i, i + 1);
             }
         }
 
-        geometry.computeVertexNormals();
-        geometry.computeFaceNormals();
-
-        geometry.dynamic = true;
+        geometry.setIndex(indices);
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 
         let material = mat;
 
@@ -50,8 +48,9 @@ export default class SightThree extends THREE.Object3D {
             });
         }
 
-        this.mesh = new THREE.Mesh(this.geometry, material);
-        this.add(this.mesh);
+        this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh.position.y = 1;
+        this.scene.add(this.mesh);
 
         this.originVec3 = new THREE.Vector3;
         this.dirVec3 = new THREE.Vector3(0, 1, 0);
@@ -61,7 +60,7 @@ export default class SightThree extends THREE.Object3D {
     dirFromAngle(angleInDegrees, angleIsGlobal) {
         let angleInRad = THREE.MathUtils.degToRad(angleInDegrees);
         if (angleIsGlobal) {
-            angleInRad += this.rotation.y;
+            angleInRad += this.mesh.rotation.y;
         }
         return {
             x: Math.sin(angleInRad),
@@ -74,8 +73,8 @@ export default class SightThree extends THREE.Object3D {
         const {viewAngle, viewSegments, viewRadius: radius} = this.props;
         const angleSize = viewAngle / viewSegments;
 
-        this.updateWorldMatrix();
-        this.getWorldPosition(this.originVec3);
+        this.mesh.updateWorldMatrix();
+        this.mesh.getWorldPosition(this.originVec3);
 
         this.raycaster.far = radius;
         for (let i = 1; i < viewSegments + 1; i++) {
@@ -91,13 +90,19 @@ export default class SightThree extends THREE.Object3D {
 
             if (intersection.length > 0) {
                 const {distance: d} = intersection[0];
-                this.mesh.geometry.vertices[i].x = d * localXYZ.x;
-                this.mesh.geometry.vertices[i].z = d * localXYZ.z;
+                this.geometry.getAttribute('position').set([
+                    d * localXYZ.x,
+                    0,
+                    d * localXYZ.z
+                ], i * 3);
             } else {
-                this.mesh.geometry.vertices[i].x = radius * localXYZ.x;
-                this.mesh.geometry.vertices[i].z = radius * localXYZ.z;
+                this.geometry.getAttribute('position').set([
+                    radius * localXYZ.x,
+                    0,
+                    radius * localXYZ.z
+                ], i * 3);
             }
         }
-        this.mesh.geometry.verticesNeedUpdate = true;
+        this.geometry.getAttribute('position').needsUpdate = true;
     }
 }

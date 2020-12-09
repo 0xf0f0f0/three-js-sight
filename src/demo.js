@@ -1,6 +1,7 @@
 import { GUI } from 'dat.gui';
 
 import SightThree from "./components/three-sight";
+import BufferSightThree from "./components/three-sight-buffer";
 
 export class Demo {
     constructor(scene) {
@@ -64,15 +65,8 @@ export class Demo {
     }
 
     createSight() {
-        const sight = this.sight = new SightThree(this.sightProps);
-        sight.position.y = 1;
-        this.scene.add(sight);
-
+        this.sight = new BufferSightThree(this.scene, this.sightProps);
         this.addGUI();
-
-        sight.rotation.y = 0.2;
-
-        this.sight.getIntersections(this.intersectionObjects);
     }
 
     addGUI() {
@@ -98,9 +92,9 @@ export class Demo {
 
     update() {
         if (this.sight) {
-            this.sight.rotation.y += .02;
-            this.sight.position.x = Math.sin(this.rT);
-            this.sight.position.z = Math.cos(this.rT) * Math.random() / 100;
+            this.sight.mesh.rotation.y += .02;
+            this.sight.mesh.position.x = Math.sin(this.rT);
+            this.sight.mesh.position.z = Math.cos(this.rT);
 
             this.sight.getIntersections(this.intersectionObjects);
 

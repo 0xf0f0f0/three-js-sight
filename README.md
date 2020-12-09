@@ -1,4 +1,4 @@
-# Simple Sight based on THREE.Geometry
+# Sight
 
 ## Usage
 
@@ -11,8 +11,24 @@
     props.viewAngle: number = default 50;
     props.viewSegments: number = default 32
 
+### Init
 
-### TODO list:
- - Linear animation
- - Geometry to BufferGeometry
- - Intersection with THREE.MathUtils
+```
+    #THREE.Geometry
+    const sight = new SightTree({
+        viewRadius: 5,
+        viewAngle: 50,
+        viewSegments: 32
+    });
+    this.scene.add(sight);
+
+    sight.getIntersections([mesh, mesh1]);
+
+    #THREE.BufferGeometry
+    const sight = new SightTree(this.scene, {
+        viewRadius: 5,
+        viewAngle: 50,
+        viewSegments: 32
+    });
+    sight.getIntersections([mesh, mesh1]);
+```
